@@ -1,0 +1,59 @@
+
+* {
+    background-color: #101720;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+h1 {
+    
+    color: #e8dab2;
+}
+
+
+
+#correct-number {
+    font-size: 200px; /* BIG number size like your second screenshot */
+    text-align: center;
+    color: #80ef80;
+    margin: 20px 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.input-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+input[type="number"] {
+    font-size: 230px;
+    padding: 20px;
+    width: 380px;
+    text-align: center;
+    display: block;
+    margin: 0 auto 10px;
+    color: #e8dab2;
+}
+
+button {
+    font-size: 24px;
+    padding: 10px 20px;
+    margin-left: 10px;
+    background-color: #e8dab2;
+    color: #101720;
+    border: none;
+    cursor: pointer;
+    border-radius: 15px 0 15px;
+}
+
+button:hover {
+    background-color: #66cc66;
+}
+
+input::placeholder {
+    font-size: 45px; 
+    text-align: center; 
+    display: flex;
+}

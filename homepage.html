@@ -1,0 +1,40 @@
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Guess The Number</title>
+    
+</script>
+</head>
+<body>
+    <h2 class="text-8xl text-center sm:text-7x1 md:text-7xl lg:text-7xl text-green-600 mt-8">
+        Guessing Game
+      </h2>
+      
+      <p class="text-2xl text-center sm:text-4x1 md:text-4xl lg:text-4xl text-center text-yellow-100 leading-snug mt-4">
+       Thank you for visiting! <br> - revs -
+      </p>
+    
+
+<div id="correct-number" class="hidden"></div>
+<h1 class="text-center text-3xl text-center sm:text-2x1 md:text-3xl lg:text-3xl mr-4 ml-4 ">NOW GUESS THE NUMBER BETWEEN 0-100</h1>
+
+
+
+    <div class="input-container">
+        <input type="number" id="guessInput" placeholder="Goodluck:)" >
+       <button id="submitGuess">Submit</button>
+        <button id="resetButton" class="hidden bg-yellow-500 text-black px-4 py-2 rounded-md mt-4">
+            Play Again
+        </button>
+    </div>
+    </div>
+
+
+    <script src="index.js"></script>
+</body>
+</html>
