@@ -1,5 +1,5 @@
 const minNum = 0;
-const maxNum = 100; 
+const maxNum = 500; 
 const answer = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
 
 let attempts = 0;
@@ -41,8 +41,9 @@ function handleGuess() {
                 window.location.href = "level2.html";
             });
 
-            //remove the submit button
+              //remove the submit button
             submitGuess.classList.add('hidden');
+        
         }
     }
 

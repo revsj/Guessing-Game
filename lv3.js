@@ -1,5 +1,5 @@
 const minNum = 0;
-const maxNum = 100; 
+const maxNum = 1000; 
 const answer = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
 
 let attempts = 0;
@@ -40,9 +40,9 @@ function handleGuess() {
             nextButton.addEventListener('click', () => {
                 window.location.href = "level2.html";
             });
-
-            //remove the submit button
+              //remove the submit button
             submitGuess.classList.add('hidden');
+        
         }
     }
 
