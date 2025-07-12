@@ -38,7 +38,7 @@ function handleGuess() {
             // Show the next level button
             nextButton.classList.remove('hidden');
             nextButton.addEventListener('click', () => {
-                window.location.href = "level2.html";
+                window.location.href = "level3.html";
             });
 
               //remove the submit button

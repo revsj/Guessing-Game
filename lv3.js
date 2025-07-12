@@ -33,13 +33,9 @@ function handleGuess() {
             // Show the reset button
             resetButton.classList.remove('hidden');
             resetButton.addEventListener('click', () => {
-                location.reload();
+                 window.location.href = "index.html";
             });
-            // Show the next level button
-            nextButton.classList.remove('hidden');
-            nextButton.addEventListener('click', () => {
-                window.location.href = "level2.html";
-            });
+         
               //remove the submit button
             submitGuess.classList.add('hidden');
         
