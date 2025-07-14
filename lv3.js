@@ -1,6 +1,6 @@
 const minNum = 0;
 const maxNum = 1000; 
-const answer = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+const numberAns = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
 
 let attempts = 0;
 
@@ -19,12 +19,12 @@ function handleGuess() {
         alert(`Please enter a number between ${minNum} and ${maxNum}.`);
     } else {
         attempts++;
-        if (guess < answer) {
+        if (guess < numberAns) {
             alert("Oops! Too low. Try again.");
-        } else if (guess > answer) {
+        } else if (guess > numberAns) {
             alert("Oops! Too high. Try again.");
         } else {
-            correctNumber.textContent = answer;
+            correctNumber.textContent = numberAns;
             correctNumber.classList.remove('hidden');
             guessInput.disabled = true;
             submitGuess.disabled = true;
