@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* The v2 stylesheet set this background on every element and used Courier New. */
+body {
+  background-color: #101720;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
