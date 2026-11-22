@@ -34,3 +34,10 @@ supabase/
 3. Supabase schema, saving scores, per-level leaderboard.
 4. Badges.
 5. (Later) Server-side validation of results.
+
+## Current state
+- Phases 1-3 done: React port, username screen, Supabase scores and per-level leaderboard (/leaderboard).
+- Next: UI/UX design pass (no logic changes), then phase 4 badges.
+
+- Usernames are case-insensitive (normalize helper); the player is stored in localStorage as gg:player { id, username }.
+- Design pass rules: no logic changes, keep Supabase calls in src/lib/supabase, restyle username, game, and leaderboard screens together.
