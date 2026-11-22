@@ -33,13 +33,13 @@ export default function useGame(level, { onWin } = {}) {
 
     // v2 treated "" as 0; we ask for a number instead and don't count it.
     if (raw === '') {
-      setMessage({ kind: 'invalid', text: 'Please enter a number' })
+      setMessage({ kind: 'invalid', text: 'Type a number to guess.' })
       return
     }
 
     const value = Number(raw)
     if (Number.isNaN(value)) {
-      setMessage({ kind: 'invalid', text: 'Please enter a valid number.' })
+      setMessage({ kind: 'invalid', text: 'Use digits only.' })
       input.value = ''
       return
     }
@@ -47,7 +47,7 @@ export default function useGame(level, { onWin } = {}) {
     if (value < min || value > max) {
       setMessage({
         kind: 'invalid',
-        text: `Please enter a number between ${min} and ${max}.`,
+        text: `Type a number from ${min} to ${max}.`,
       })
       input.value = ''
       return
@@ -57,14 +57,17 @@ export default function useGame(level, { onWin } = {}) {
     setAttempts(nextAttempts)
 
     if (value < target) {
-      setMessage({ kind: 'low', text: 'Oops! Too low. Try again.' })
+      setMessage({ kind: 'low', text: 'Too low. Try a bigger number.' })
     } else if (value > target) {
-      setMessage({ kind: 'high', text: 'Oops! Too high. Try again.' })
+      setMessage({ kind: 'high', text: 'Too high. Try a smaller number.' })
     } else {
       setStatus('won')
       setMessage({
         kind: 'win',
-        text: `Congratulations! You guessed it in ${nextAttempts} attempts.`,
+        text:
+          nextAttempts === 1
+            ? 'You got it in 1 guess.'
+            : `You got it in ${nextAttempts} guesses.`,
       })
       onWin?.(nextAttempts)
     }

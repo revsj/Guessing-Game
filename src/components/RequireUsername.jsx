@@ -11,8 +11,10 @@ export default function RequireUsername() {
 
   if (!player.isReady) {
     return (
-      <main className="flex min-h-screen w-full items-center justify-center px-4 text-lg text-yellow-100">
-        Checking your player…
+      <main className="flex min-h-dvh w-full items-center justify-center px-5">
+        <p role="status" className="text-base text-chalk/60">
+          Loading your player…
+        </p>
       </main>
     )
   }

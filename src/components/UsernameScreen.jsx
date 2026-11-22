@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from '../lib/username.js'
 
 export default function UsernameScreen({ player, overlay = false }) {
@@ -36,12 +37,9 @@ export default function UsernameScreen({ player, overlay = false }) {
   const canCancel = Boolean(username)
 
   const form = (
-    <form onSubmit={handleSubmit} className="mt-6 flex w-full flex-col items-center">
-      <label
-        htmlFor="username"
-        className="text-center text-xl text-yellow-100 sm:text-2xl"
-      >
-        {canCancel ? 'New username' : 'Choose a username'}
+    <form onSubmit={handleSubmit} className="mt-6 flex w-full flex-col">
+      <label htmlFor="username" className="sr-only">
+        Your name
       </label>
 
       <input
@@ -56,15 +54,16 @@ export default function UsernameScreen({ player, overlay = false }) {
         aria-invalid={Boolean(error)}
         aria-describedby={error ? 'username-hint username-error' : 'username-hint'}
         placeholder="e.g. revs_99"
-        className="mt-3 w-72 max-w-xs rounded-md border border-gray-300 bg-transparent p-2 text-center text-2xl text-[#e8dab2] placeholder:text-lg focus:outline-none"
+        className="h-14 w-full rounded-sm border border-chalk/20 bg-panel px-4 text-base text-chalk placeholder:text-chalk/60 focus:border-chalk/60"
       />
 
-      <p id="username-hint" className="mt-2 text-center text-sm text-gray-400">
-        {USERNAME_MIN_LENGTH}–{USERNAME_MAX_LENGTH} characters. Letters, numbers, _ and - only.
+      <p id="username-hint" className="mt-2 text-sm text-chalk/60">
+        {USERNAME_MIN_LENGTH}–{USERNAME_MAX_LENGTH} characters: letters, numbers,
+        underscore or dash.
       </p>
 
       {error && (
-        <p id="username-error" className="mt-2 text-center text-base text-red-400">
+        <p id="username-error" role="alert" className="mt-2 text-sm text-coral">
           {error}
         </p>
       )}
@@ -72,16 +71,16 @@ export default function UsernameScreen({ player, overlay = false }) {
       <button
         type="submit"
         disabled={isSaving}
-        className="mt-5 rounded-md bg-yellow-500 px-4 py-2 text-2xl text-black hover:bg-yellow-400 disabled:opacity-60"
+        className="mt-5 h-12 w-full rounded-sm bg-gold px-5 text-base font-medium text-ink motion-safe:transition-colors motion-safe:active:translate-y-px hover:bg-gold/90 disabled:opacity-60"
       >
-        {isSaving ? 'Saving…' : canCancel ? 'Save name' : 'Start playing'}
+        {isSaving ? 'Saving name…' : 'Save name'}
       </button>
 
       {canCancel && (
         <button
           type="button"
           onClick={cancelChangeName}
-          className="mt-3 text-base text-yellow-100 underline underline-offset-2 hover:text-green-400"
+          className="mt-1 h-11 w-full rounded-sm text-base text-chalk/70 motion-safe:transition-colors hover:text-chalk"
         >
           Cancel
         </button>
@@ -91,39 +90,50 @@ export default function UsernameScreen({ player, overlay = false }) {
 
   if (!overlay) {
     return (
-      <main className="flex min-h-screen w-full flex-col items-center justify-center px-4 text-white">
-        <h2 className="text-center text-5xl text-green-600 sm:text-5xl md:text-6xl lg:text-7xl">
-          Guessing Game
-        </h2>
+      <main className="flex min-h-dvh w-full flex-col">
+        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 sm:px-6">
+          <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-chalk/15 py-4">
+            <h1 className="font-display text-lg font-semibold tracking-tight">
+              Guessing game
+            </h1>
+            <Link
+              to="/leaderboard"
+              className="text-sm text-chalk/60 underline decoration-chalk/30 underline-offset-4 hover:text-chalk"
+            >
+              Leaderboard
+            </Link>
+          </header>
 
-        <p className="mt-4 text-center text-xl leading-snug text-yellow-100 sm:text-2xl md:text-3xl lg:text-4xl">
-          Thank you for visiting! <br /> - revs -
-        </p>
+          <div className="flex flex-1 items-center py-10">
+            <div className="w-full max-w-sm">
+              <h2 className="text-2xl font-semibold sm:text-3xl">Pick a name</h2>
+              <p className="mt-2 text-base text-chalk/60">
+                This is the name on the leaderboard.
+              </p>
 
-        <p className="mt-6 text-center text-lg text-[#e8dab2] sm:text-xl md:text-2xl">
-          Pick a name to play under.
-        </p>
+              {form}
+            </div>
+          </div>
 
-        {form}
+          <footer className="py-5 text-xs text-chalk/60">Made by revs</footer>
+        </div>
       </main>
     )
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#101720]/90 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/85 px-4 backdrop-blur-sm">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="rename-title"
-        className="w-full max-w-md rounded-md border border-gray-600 bg-[#101720] p-6 shadow-xl"
+        aria-describedby="rename-hint"
+        className="max-h-[90dvh] w-full max-w-sm overflow-y-auto rounded-sm border border-chalk/15 bg-panel p-6"
       >
-        <h2
-          id="rename-title"
-          className="text-center text-2xl text-green-600 sm:text-3xl"
-        >
+        <h2 id="rename-title" className="text-xl font-semibold sm:text-2xl">
           Change name
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-400">
+        <p id="rename-hint" className="mt-1 text-sm text-chalk/60">
           Your current game stays where it is.
         </p>
 

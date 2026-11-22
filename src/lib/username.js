@@ -34,27 +34,27 @@ export function validateUsername(raw) {
   const value = String(raw ?? '').trim()
 
   if (value === '') {
-    return { ok: false, error: 'Please enter a username' }
+    return { ok: false, error: 'Enter a name to keep playing.' }
   }
 
   if (value.length < USERNAME_MIN_LENGTH) {
     return {
       ok: false,
-      error: `Username must be at least ${USERNAME_MIN_LENGTH} characters`,
+      error: `Use at least ${USERNAME_MIN_LENGTH} characters.`,
     }
   }
 
   if (value.length > USERNAME_MAX_LENGTH) {
     return {
       ok: false,
-      error: `Username must be ${USERNAME_MAX_LENGTH} characters or fewer`,
+      error: `Use ${USERNAME_MAX_LENGTH} characters or fewer.`,
     }
   }
 
   if (!USERNAME_PATTERN.test(value)) {
     return {
       ok: false,
-      error: 'Use only letters, numbers, underscores and dashes',
+      error: 'Use letters, numbers, underscores or dashes.',
     }
   }
 

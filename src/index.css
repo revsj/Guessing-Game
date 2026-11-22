@@ -1,11 +1,105 @@
 @import "tailwindcss";
 
-/* The v2 stylesheet set this background on every element and used Courier New. */
-body {
-  background-color: #101720;
-  font-family: 'Courier New', Courier, monospace;
+@theme {
+  --font-sans:
+    "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display:
+    "Martian Mono", ui-monospace, "Cascadia Mono", "Courier New", monospace;
+
+  --color-ink: #101e24;
+  --color-panel: #1a2e35;
+  --color-chalk: #ede6d6;
+  --color-gold: #f0b429;
+  --color-mint: #7bdcb5;
+  --color-coral: #ff8e7a;
+
+  --animate-reveal: reveal 360ms cubic-bezier(0.2, 0, 0, 1) both;
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(-0.16em) scale(1.02);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
-:root {
-  color-scheme: dark;
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #101e24;
+    color: #ede6d6;
+    font-family:
+      "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* One ring for every control: chalk reads on ink and around gold buttons. */
+  :focus-visible {
+    outline: 2px solid #ede6d6;
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: #f0b429;
+    color: #101e24;
+  }
+}
+
+/* Win celebration: rise and sway animate transform + opacity only. */
+@keyframes balloon-rise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(0, -125vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes balloon-sway {
+  from {
+    transform: translate3d(-7px, 0, 0) rotate(-4deg);
+  }
+  to {
+    transform: translate3d(7px, 0, 0) rotate(4deg);
+  }
+}
+
+@keyframes answer-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(123, 220, 181, 0);
+  }
+  20% {
+    box-shadow:
+      0 0 0 1px rgba(123, 220, 181, 0.5),
+      0 0 36px -6px rgba(123, 220, 181, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(123, 220, 181, 0);
+  }
+}
+
+@keyframes ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
 }

@@ -22,7 +22,7 @@ export default function useLeaderboard(level) {
           setState({
             status: 'error',
             rows: [],
-            error: 'Could not load the leaderboard.',
+            error: "Couldn't load scores. Check your connection.",
           })
         }
       })

@@ -14,7 +14,7 @@ export default function useScoreSave() {
     if (!payload?.playerId) {
       setState({
         status: 'error',
-        error: 'No player profile, so this score was not saved.',
+        error: 'This score was not saved. Choose a name so scores can be saved.',
       })
       return
     }
@@ -26,7 +26,7 @@ export default function useScoreSave() {
     } catch {
       setState({
         status: 'error',
-        error: 'Score not saved — your game still counts.',
+        error: "Couldn't save your score. Check your connection.",
       })
     }
   }, [])
