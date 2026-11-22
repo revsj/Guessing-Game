@@ -1,0 +1,1 @@
+create unique index players_username_lower_idx on players (lower(username));
