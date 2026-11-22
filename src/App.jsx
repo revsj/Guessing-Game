@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Play from './pages/Play.jsx'
+import LeaderboardPage from './pages/Leaderboard.jsx'
 import RequireUsername from './components/RequireUsername.jsx'
 import UsernameScreen from './components/UsernameScreen.jsx'
 import { PlayerProvider, usePlayer } from './hooks/usePlayer.js'
@@ -24,6 +25,9 @@ function AppRoutes() {
         <Route element={<RequireUsername />}>
           <Route path="/play/:level" element={<Play />} />
         </Route>
+
+        {/* Public: readable without a name, own row highlighted when there is one. */}
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
 
         <Route path="*" element={<Navigate to={`/play/${DEFAULT_LEVEL}`} replace />} />
       </Routes>

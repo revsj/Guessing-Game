@@ -1,7 +1,9 @@
+import { useCallback } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import GameBoard from '../components/GameBoard.jsx'
 import useGame from '../hooks/useGame.js'
 import { usePlayer } from '../hooks/usePlayer.js'
+import useScoreSave from '../hooks/useScoreSave.js'
 import { DEFAULT_LEVEL, getLevel, getNextLevel } from '../constants/levels.js'
 
 export default function Play() {
@@ -18,16 +20,35 @@ export default function Play() {
 
 function LevelGame({ level }) {
   const navigate = useNavigate()
-  const game = useGame(level)
-  const { username, startChangeName } = usePlayer()
+  const { username, playerId, isExistingPlayer, startChangeName } = usePlayer()
+  const score = useScoreSave()
+  const { save } = score
+
+  const handleWin = useCallback(
+    (attempts) => {
+      // Fire and forget: a failed save must never block the game.
+      save({ playerId, level: level.level, guesses: attempts })
+    },
+    [save, playerId, level.level],
+  )
+
+  const game = useGame(level, { onWin: handleWin })
   const nextLevel = getNextLevel(level.level)
+
+  function handleReset() {
+    game.reset()
+    score.reset()
+  }
 
   return (
     <GameBoard
       level={level}
       game={game}
       username={username}
+      isExistingPlayer={isExistingPlayer}
       onChangeName={startChangeName}
+      score={score}
+      onReset={handleReset}
       nextLevel={nextLevel}
       onNext={nextLevel ? () => navigate(`/play/${nextLevel.level}`) : null}
     />

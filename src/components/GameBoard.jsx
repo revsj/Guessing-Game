@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import GameMessage from './GameMessage.jsx'
 import GuessForm from './GuessForm.jsx'
 
@@ -5,7 +6,10 @@ export default function GameBoard({
   level,
   game,
   username,
+  isExistingPlayer,
   onChangeName,
+  score,
+  onReset,
   nextLevel,
   onNext,
 }) {
@@ -34,13 +38,54 @@ export default function GameBoard({
         >
           Change name
         </button>
+        <span aria-hidden="true">·</span>
+        <Link
+          to="/leaderboard"
+          state={{ level: level.level }}
+          className="underline underline-offset-2 hover:text-green-400"
+        >
+          Leaderboard
+        </Link>
       </div>
+
+      {isExistingPlayer && (
+        <p className="mt-1 text-center text-sm text-gray-400">
+          Existing player — scores add to this name
+        </p>
+      )}
 
       <p className="mt-4 text-center text-xl leading-snug text-yellow-100 sm:text-2xl md:text-3xl lg:text-4xl">
         Thank you for visiting! <br /> - revs -
       </p>
 
       <GameMessage message={game.message} target={game.target} won={won} />
+
+      {won && (
+        <div className="mt-2 flex flex-col items-center gap-1 text-center text-base sm:text-lg">
+          {score.status === 'saving' && (
+            <p className="text-yellow-100">Saving your score…</p>
+          )}
+
+          {score.status === 'saved' && (
+            <p className="text-green-400">
+              Score saved to the Level {level.level} leaderboard.
+            </p>
+          )}
+
+          {score.status === 'error' && (
+            <>
+              <p className="text-red-400">{score.error}</p>
+              <button
+                type="button"
+                onClick={score.retry}
+                className="text-yellow-100 underline underline-offset-2 hover:text-green-400"
+              >
+                Try again
+              </button>
+            </>
+          )}
+        </div>
+      )}
 
       <h1 className="mt-4 text-center text-lg text-[#e8dab2] sm:text-xl md:text-2xl lg:text-3xl">
         NOW GUESS THE NUMBER BETWEEN {level.min}-{level.max}
@@ -51,7 +96,7 @@ export default function GameBoard({
         won={won}
         nextLevel={nextLevel}
         onGuess={game.guess}
-        onReset={game.reset}
+        onReset={onReset}
         onNext={onNext}
       />
     </main>

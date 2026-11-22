@@ -9,31 +9,86 @@ import {
   useState,
 } from 'react'
 import {
+  PLAYER_KEY,
   USERNAME_KEY,
-  loadUsername,
-  saveUsername as persistUsername,
+  clearPlayer,
+  loadPlayer,
+  savePlayer,
   usernameKey,
   validateUsername,
 } from '../lib/username.js'
+import { findOrCreatePlayer, getPlayer } from '../lib/supabase/players.js'
 
 const PlayerContext = createContext(null)
 
 /**
- * Username + player state. Phase 3 turns saveUsername into a Supabase player
- * lookup; the Promise/isSaving shape is already in place for that.
+ * Player identity: a stored { id, username } backed by the `players` table.
+ * Names are matched case-insensitively; the typed case is kept for display.
  */
 export function PlayerProvider({ children }) {
-  const [username, setUsername] = useState(loadUsername)
+  const [stored] = useState(loadPlayer)
+  const [player, setPlayer] = useState(stored)
+  const [isReady, setIsReady] = useState(!stored?.id)
   const [isChangingName, setIsChangingName] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const returnFocusRef = useRef(null)
 
-  // Keep the header in sync when the name changes in another tab.
+  // A stored id must still exist; if it was deleted, ask for a name again.
+  useEffect(() => {
+    if (!stored?.id) return
+    let cancelled = false
+
+    async function verify() {
+      try {
+        const row = await getPlayer(stored.id)
+        if (cancelled) return
+        if (!row) {
+          clearPlayer()
+          setPlayer(null)
+        }
+      } catch {
+        // Supabase unreachable: keep playing with the stored id.
+      } finally {
+        if (!cancelled) setIsReady(true)
+      }
+    }
+
+    verify()
+    return () => {
+      cancelled = true
+    }
+  }, [stored])
+
+  // A phase-2 name without a row id gets its players row now.
+  useEffect(() => {
+    if (!stored?.username || stored.id) return
+    let cancelled = false
+
+    async function upgrade() {
+      try {
+        const row = await findOrCreatePlayer(stored.username)
+        if (cancelled) return
+        const next = { id: row.id, username: stored.username, adopted: false }
+        savePlayer(next)
+        setPlayer(next)
+      } catch {
+        // Offline: keep the name so the game still works without scores.
+      }
+    }
+
+    upgrade()
+    return () => {
+      cancelled = true
+    }
+  }, [stored])
+
+  // Keep the header in sync when the player changes in another tab.
   useEffect(() => {
     function handleStorage(event) {
-      if (event.key !== USERNAME_KEY) return
-      const result = validateUsername(event.newValue)
-      setUsername(result.ok ? result.value : null)
+      if (event.key !== PLAYER_KEY && event.key !== USERNAME_KEY) return
+      const next = loadPlayer()
+      setPlayer(next)
+      setIsReady(true)
     }
 
     window.addEventListener('storage', handleStorage)
@@ -62,9 +117,14 @@ export function PlayerProvider({ children }) {
 
     setIsSaving(true)
     try {
-      // Sync today; awaited so phase 3 can await a Supabase write.
-      await persistUsername(result.value)
-      setUsername(result.value)
+      const row = await findOrCreatePlayer(result.value)
+      const next = {
+        id: row.id,
+        username: result.value,
+        adopted: Boolean(row.existed),
+      }
+      savePlayer(next)
+      setPlayer(next)
       setIsChangingName(false)
       return null
     } catch {
@@ -74,18 +134,33 @@ export function PlayerProvider({ children }) {
     }
   }, [])
 
+  const username = player?.username ?? null
+
   const value = useMemo(
     () => ({
       username,
       normalizedUsername: username ? usernameKey(username) : null,
+      playerId: player?.id ?? null,
       hasUsername: Boolean(username),
+      isExistingPlayer: Boolean(player?.adopted),
+      isReady,
       isChangingName,
       isSaving,
       saveUsername,
       startChangeName,
       cancelChangeName,
     }),
-    [username, isChangingName, isSaving, saveUsername, startChangeName, cancelChangeName],
+    [
+      username,
+      player?.id,
+      player?.adopted,
+      isReady,
+      isChangingName,
+      isSaving,
+      saveUsername,
+      startChangeName,
+      cancelChangeName,
+    ],
   )
 
   // createElement keeps this hook in a .js file (JSX needs .jsx here).

@@ -9,8 +9,9 @@ function randomTarget(min, max) {
 
 /**
  * All guessing game state and rules. Components only render and call these.
+ * `onWin(attempts)` fires exactly once, on the winning guess.
  */
-export default function useGame(level) {
+export default function useGame(level, { onWin } = {}) {
   const { min, max } = level
 
   const [target, setTarget] = useState(() => randomTarget(min, max))
@@ -65,10 +66,11 @@ export default function useGame(level) {
         kind: 'win',
         text: `Congratulations! You guessed it in ${nextAttempts} attempts.`,
       })
+      onWin?.(nextAttempts)
     }
 
     input.value = ''
-  }, [attempts, max, min, status, target])
+  }, [attempts, max, min, onWin, status, target])
 
   const reset = useCallback(() => {
     setTarget(randomTarget(min, max))
