@@ -1,7 +1,14 @@
 import GameMessage from './GameMessage.jsx'
 import GuessForm from './GuessForm.jsx'
 
-export default function GameBoard({ level, game, nextLevel, onNext }) {
+export default function GameBoard({
+  level,
+  game,
+  username,
+  onChangeName,
+  nextLevel,
+  onNext,
+}) {
   const won = game.status === 'won'
 
   return (
@@ -12,6 +19,21 @@ export default function GameBoard({ level, game, nextLevel, onNext }) {
 
       <div className="mt-2 text-center text-lg text-yellow-400 sm:text-xl md:text-2xl lg:text-3xl">
         Level {level.level}
+      </div>
+
+      <div className="mt-1 flex flex-wrap items-center justify-center gap-x-2 text-base text-yellow-100 sm:text-lg">
+        <span>
+          Playing as <span className="text-yellow-400">{username}</span>
+        </span>
+        <span aria-hidden="true">·</span>
+        <button
+          type="button"
+          onClick={onChangeName}
+          aria-haspopup="dialog"
+          className="underline underline-offset-2 hover:text-green-400"
+        >
+          Change name
+        </button>
       </div>
 
       <p className="mt-4 text-center text-xl leading-snug text-yellow-100 sm:text-2xl md:text-3xl lg:text-4xl">
