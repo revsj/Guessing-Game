@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { isSupabaseConfigured } from '../lib/supabase/client.js'
 import { USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from '../lib/username.js'
+import DatabaseNotice from './DatabaseNotice.jsx'
 
 export default function UsernameScreen({ player, overlay = false }) {
   const { username, isSaving, saveUsername, cancelChangeName } = player
@@ -25,6 +27,7 @@ export default function UsernameScreen({ player, overlay = false }) {
 
   async function handleSubmit(event) {
     event.preventDefault()
+    if (!isSupabaseConfigured) return
     const message = await saveUsername(value)
     setError(message)
   }
@@ -68,9 +71,16 @@ export default function UsernameScreen({ player, overlay = false }) {
         </p>
       )}
 
+      {!isSupabaseConfigured && (
+        <DatabaseNotice id="username-db-notice" className="mt-2 text-sm" />
+      )}
+
       <button
         type="submit"
-        disabled={isSaving}
+        disabled={!isSupabaseConfigured || isSaving}
+        aria-describedby={
+          isSupabaseConfigured ? undefined : 'username-db-notice'
+        }
         className="mt-5 h-12 w-full rounded-sm bg-gold px-5 text-base font-medium text-ink motion-safe:transition-colors motion-safe:active:translate-y-px hover:bg-gold/90 disabled:opacity-60"
       >
         {isSaving ? 'Saving name…' : 'Save name'}

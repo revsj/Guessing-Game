@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import DatabaseNotice from '../components/DatabaseNotice.jsx'
 import Leaderboard from '../components/Leaderboard.jsx'
 import useLeaderboard from '../hooks/useLeaderboard.js'
 import { usePlayer } from '../hooks/usePlayer.js'
 import { DEFAULT_LEVEL, LEVELS, getLevel } from '../constants/levels.js'
+import { isSupabaseConfigured } from '../lib/supabase/client.js'
 
 export default function LeaderboardPage() {
   const { normalizedUsername, hasUsername } = usePlayer()
@@ -28,48 +30,54 @@ export default function LeaderboardPage() {
           <h2 className="text-2xl font-semibold sm:text-3xl">Leaderboard</h2>
           <p className="mt-1 text-base text-chalk/60">Best guesses per player.</p>
 
-          <div
-            role="group"
-            aria-label="Leaderboard level"
-            className="mt-6 flex w-full max-w-md divide-x divide-chalk/15 overflow-hidden rounded-sm border border-chalk/15"
-          >
-            {Object.values(LEVELS).map((option) => {
-              const active = option.level === level
+          {isSupabaseConfigured ? (
+            <>
+              <div
+                role="group"
+                aria-label="Leaderboard level"
+                className="mt-6 flex w-full max-w-md divide-x divide-chalk/15 overflow-hidden rounded-sm border border-chalk/15"
+              >
+                {Object.values(LEVELS).map((option) => {
+                  const active = option.level === level
 
-              return (
-                <button
-                  key={option.level}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setLevel(option.level)}
-                  className={`flex-1 px-2 py-2 text-center motion-safe:transition-colors ${
-                    active
-                      ? 'bg-gold text-ink'
-                      : 'text-chalk/60 hover:bg-chalk/5 hover:text-chalk'
-                  }`}
-                >
-                  <span className="block font-display text-xs font-medium">
-                    Level {option.level}
-                  </span>
-                  <span
-                    className={`mt-0.5 block font-display text-[11px] ${
-                      active ? 'text-ink/80' : 'text-chalk/60'
-                    }`}
-                  >
-                    {option.min}–{option.max}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+                  return (
+                    <button
+                      key={option.level}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setLevel(option.level)}
+                      className={`flex-1 px-2 py-2 text-center motion-safe:transition-colors ${
+                        active
+                          ? 'bg-gold text-ink'
+                          : 'text-chalk/60 hover:bg-chalk/5 hover:text-chalk'
+                      }`}
+                    >
+                      <span className="block font-display text-xs font-medium">
+                        Level {option.level}
+                      </span>
+                      <span
+                        className={`mt-0.5 block font-display text-[11px] ${
+                          active ? 'text-ink/80' : 'text-chalk/60'
+                        }`}
+                      >
+                        {option.min}–{option.max}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
 
-          <div className="mt-6 rounded-sm border border-chalk/15 p-4 sm:p-6">
-            <Leaderboard
-              level={level}
-              {...board}
-              normalizedUsername={normalizedUsername}
-            />
-          </div>
+              <div className="mt-6 rounded-sm border border-chalk/15 p-4 sm:p-6">
+                <Leaderboard
+                  level={level}
+                  {...board}
+                  normalizedUsername={normalizedUsername}
+                />
+              </div>
+            </>
+          ) : (
+            <DatabaseNotice className="mt-6 text-base" />
+          )}
 
           <div className="mt-8 flex flex-wrap items-baseline gap-x-6 gap-y-3 text-base">
             <Link
