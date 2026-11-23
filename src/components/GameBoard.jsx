@@ -76,50 +76,53 @@ export default function GameBoard({
             <>
               <GameMessage message={game.message} target={game.target} won tier={tier} />
 
-              <div className="mt-3 min-h-6 text-sm">
-                {score.status === 'saving' && (
-                  <p className="text-chalk/60">Saving score…</p>
-                )}
+              {/* Opaque: keeps celebration balloons behind the status and actions. */}
+              <div className="-mx-2 mt-3 bg-ink px-2 pb-2">
+                <div className="min-h-6 text-sm">
+                  {score.status === 'saving' && (
+                    <p className="text-chalk/60">Saving score…</p>
+                  )}
 
-                {score.status === 'saved' && (
-                  <p className="text-chalk/60">
-                    Saved to the Level {level.level} leaderboard.
-                  </p>
-                )}
+                  {score.status === 'saved' && (
+                    <p className="text-chalk/60">
+                      Saved to the Level {level.level} leaderboard.
+                    </p>
+                  )}
 
-                {score.status === 'error' && (
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                    <p className="text-coral">{score.error}</p>
+                  {score.status === 'error' && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                      <p className="text-coral">{score.error}</p>
+                      <button
+                        type="button"
+                        onClick={score.retry}
+                        className="h-11 rounded-sm border border-chalk/25 px-4 text-sm text-chalk motion-safe:transition-colors hover:border-chalk/50 hover:bg-chalk/5"
+                      >
+                        Retry save
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+                  {nextLevel && (
                     <button
                       type="button"
-                      onClick={score.retry}
-                      className="h-11 rounded-sm border border-chalk/25 px-4 text-sm text-chalk motion-safe:transition-colors hover:border-chalk/50 hover:bg-chalk/5"
+                      onClick={onNext}
+                      autoFocus
+                      className={PRIMARY_BUTTON}
                     >
-                      Retry save
+                      Next level
                     </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-6 flex flex-col gap-2 sm:flex-row">
-                {nextLevel && (
+                  )}
                   <button
                     type="button"
-                    onClick={onNext}
-                    autoFocus
-                    className={PRIMARY_BUTTON}
+                    onClick={onReset}
+                    autoFocus={!nextLevel}
+                    className={nextLevel ? SECONDARY_BUTTON : PRIMARY_BUTTON}
                   >
-                    Next level
+                    Play again
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={onReset}
-                  autoFocus={!nextLevel}
-                  className={nextLevel ? SECONDARY_BUTTON : PRIMARY_BUTTON}
-                >
-                  Play again
-                </button>
+                </div>
               </div>
             </>
           ) : (
