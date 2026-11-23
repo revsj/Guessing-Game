@@ -36,8 +36,9 @@ supabase/
 5. (Later) Server-side validation of results.
 
 ## Current state
-- Phases 1-3 done: React port, username screen, Supabase scores and per-level leaderboard (/leaderboard).
-- Next: UI/UX design pass (no logic changes), then phase 4 badges.
+- Phases 1-4 done: React port, username screen, Supabase scores and per-level leaderboard (/leaderboard), badges.
+- Badges are computed on read from scores (plus the leaderboard view for Top 10). Nothing is written to player_badges: its insert policy is open, so stored badges could be faked.
+- Next: phase 5, server-side validation of results.
 
 - Usernames are case-insensitive (normalize helper); the player is stored in localStorage as gg:player { id, username }.
 - Design pass rules: no logic changes, keep Supabase calls in src/lib/supabase, restyle username, game, and leaderboard screens together.

@@ -1,10 +1,12 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import GameBoard from '../components/GameBoard.jsx'
+import useBadges from '../hooks/useBadges.js'
 import useGame from '../hooks/useGame.js'
 import { usePlayer } from '../hooks/usePlayer.js'
 import useScoreSave from '../hooks/useScoreSave.js'
 import { DEFAULT_LEVEL, getLevel, getNextLevel } from '../constants/levels.js'
+import { earnedCodes, sortByRarity } from '../lib/badges.js'
 
 export default function Play() {
   const { level: levelParam } = useParams()
@@ -23,6 +25,9 @@ function LevelGame({ level }) {
   const { username, playerId, isExistingPlayer, startChangeName } = usePlayer()
   const score = useScoreSave()
   const { save } = score
+  const badges = useBadges({ playerId, username })
+  const { reload: reloadBadges } = badges
+  const [baseline, setBaseline] = useState(null)
 
   const handleWin = useCallback(
     (attempts) => {
@@ -35,9 +40,30 @@ function LevelGame({ level }) {
   const game = useGame(level, { onWin: handleWin })
   const nextLevel = getNextLevel(level.level)
 
+  // Baseline = the first successful load. A failed first load means this round
+  // shows no "new" badges rather than claiming the whole list.
+  useEffect(() => {
+    if (baseline || badges.status !== 'ready') return
+    setBaseline(earnedCodes(badges.badges))
+  }, [baseline, badges.status, badges.badges])
+
+  // The saved score changes the board: recompute badges once it lands.
+  useEffect(() => {
+    if (score.status === 'saved') reloadBadges()
+  }, [score.status, reloadBadges])
+
+  const newBadges = useMemo(() => {
+    if (!baseline || badges.status !== 'ready') return []
+    return sortByRarity(
+      badges.badges.filter((badge) => badge.earned && !baseline.has(badge.code)),
+    )
+  }, [baseline, badges.badges, badges.status])
+
   function handleReset() {
     game.reset()
     score.reset()
+    // This round is over; the badges just earned become the new baseline.
+    setBaseline(badges.status === 'ready' ? earnedCodes(badges.badges) : null)
   }
 
   return (
@@ -48,6 +74,7 @@ function LevelGame({ level }) {
       isExistingPlayer={isExistingPlayer}
       onChangeName={startChangeName}
       score={score}
+      newBadges={newBadges}
       onReset={handleReset}
       nextLevel={nextLevel}
       onNext={nextLevel ? () => navigate(`/play/${nextLevel.level}`) : null}

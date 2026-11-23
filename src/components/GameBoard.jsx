@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom'
+import BadgeList from './BadgeList.jsx'
 import GameMessage from './GameMessage.jsx'
 import GuessForm from './GuessForm.jsx'
 import WinCelebration, { getWinTier } from './WinCelebration.jsx'
+
+const MAX_NEW_BADGES = 3
 
 const PRIMARY_BUTTON =
   'h-14 rounded-sm bg-gold px-6 text-base font-medium text-ink motion-safe:transition-colors motion-safe:active:translate-y-px hover:bg-gold/90'
@@ -16,12 +19,18 @@ export default function GameBoard({
   isExistingPlayer,
   onChangeName,
   score,
+  newBadges = [],
   onReset,
   nextLevel,
   onNext,
 }) {
   const won = game.status === 'won'
   const tier = won ? getWinTier(game.attempts, level.optimal) : null
+
+  // Only after a successful save, rarest first, at most three.
+  const freshBadges = score.status === 'saved' ? newBadges : []
+  const shownBadges = freshBadges.slice(0, MAX_NEW_BADGES)
+  const hiddenCount = freshBadges.length - shownBadges.length
 
   return (
     <main className="isolate flex min-h-dvh w-full flex-col">
@@ -78,7 +87,8 @@ export default function GameBoard({
 
               {/* Opaque: keeps celebration balloons behind the status and actions. */}
               <div className="-mx-2 mt-3 bg-ink px-2 pb-2">
-                <div className="min-h-6 text-sm">
+                {/* One live region: the save line and any new badges announce together. */}
+                <div role="status" className="min-h-6 text-sm">
                   {score.status === 'saving' && (
                     <p className="text-chalk/60">Saving score…</p>
                   )}
@@ -99,6 +109,24 @@ export default function GameBoard({
                       >
                         Retry save
                       </button>
+                    </div>
+                  )}
+
+                  {shownBadges.length > 0 && (
+                    <div className="mt-2">
+                      <p className="font-display text-xs font-medium tracking-wide text-gold">
+                        {shownBadges.length === 1 && hiddenCount === 0
+                          ? 'New badge'
+                          : 'New badges'}
+                      </p>
+
+                      <BadgeList badges={shownBadges} variant="new" />
+
+                      {hiddenCount > 0 && (
+                        <p className="mt-1 text-xs text-chalk/60">
+                          +{hiddenCount} more, see the leaderboard
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

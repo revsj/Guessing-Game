@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import BadgeList from '../components/BadgeList.jsx'
 import DatabaseNotice from '../components/DatabaseNotice.jsx'
 import Leaderboard from '../components/Leaderboard.jsx'
+import useBadges from '../hooks/useBadges.js'
 import useLeaderboard from '../hooks/useLeaderboard.js'
 import { usePlayer } from '../hooks/usePlayer.js'
 import { DEFAULT_LEVEL, LEVELS, getLevel } from '../constants/levels.js'
 import { isSupabaseConfigured } from '../lib/supabase/client.js'
 
 export default function LeaderboardPage() {
-  const { normalizedUsername, hasUsername } = usePlayer()
+  const { normalizedUsername, playerId, hasUsername } = usePlayer()
   const location = useLocation()
 
   // Coming from the game keeps you on that level.
@@ -16,6 +18,10 @@ export default function LeaderboardPage() {
     () => getLevel(location.state?.level)?.level ?? DEFAULT_LEVEL,
   )
   const board = useLeaderboard(level)
+  const badges = useBadges({
+    playerId: isSupabaseConfigured ? playerId : null,
+    username: normalizedUsername,
+  })
 
   return (
     <main className="flex min-h-dvh w-full flex-col">
@@ -74,6 +80,42 @@ export default function LeaderboardPage() {
                   normalizedUsername={normalizedUsername}
                 />
               </div>
+
+              {playerId && (
+                <section aria-labelledby="your-badges" className="mt-8">
+                  <h3
+                    id="your-badges"
+                    className="font-display text-xs font-medium tracking-wide text-gold"
+                  >
+                    Your badges
+                  </h3>
+
+                  <div className="mt-3">
+                    {badges.status === 'loading' && (
+                      <p role="status" className="text-sm text-chalk/60">
+                        Loading badges…
+                      </p>
+                    )}
+
+                    {badges.status === 'error' && (
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                        <p className="text-sm text-coral">{badges.error}</p>
+                        <button
+                          type="button"
+                          onClick={badges.reload}
+                          className="h-11 rounded-sm border border-chalk/25 px-4 text-sm text-chalk motion-safe:transition-colors hover:border-chalk/50 hover:bg-chalk/5"
+                        >
+                          Reload badges
+                        </button>
+                      </div>
+                    )}
+
+                    {badges.status === 'ready' && (
+                      <BadgeList badges={badges.badges} />
+                    )}
+                  </div>
+                </section>
+              )}
             </>
           ) : (
             <DatabaseNotice className="mt-6 text-base" />
