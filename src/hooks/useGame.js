@@ -1,87 +1,166 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { startGame, submitGuess } from '../lib/supabase/games.js'
 
 /**
- * Same formula as v2, so the max value is reachable too.
- */
-function randomTarget(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-/**
- * All guessing game state and rules. Components only render and call these.
- * `onWin(attempts)` fires exactly once, on the winning guess.
+ * The server owns the target and attempt count; this hook only renders results.
  */
 export default function useGame(level, { onWin } = {}) {
-  const { min, max } = level
-
-  const [target, setTarget] = useState(() => randomTarget(min, max))
-  const [attempts, setAttempts] = useState(0)
-  const [status, setStatus] = useState('playing')
-  const [message, setMessage] = useState(null)
+  const [round, setRound] = useState({
+    gameId: null,
+    min: level.min,
+    max: level.max,
+    attempts: 0,
+    status: 'loading',
+    message: null,
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const inputRef = useRef(null)
+  const pendingRef = useRef(false)
+  const requestIdRef = useRef(0)
 
-  // Focus the input on mount and again whenever a new round starts.
+  const startRound = useCallback(async () => {
+    const requestId = ++requestIdRef.current
+    setRound((current) => ({
+      ...current,
+      gameId: null,
+      attempts: 0,
+      status: 'loading',
+      message: null,
+    }))
+
+    try {
+      const game = await startGame(level.level)
+      if (requestId !== requestIdRef.current) return
+      setRound({
+        gameId: game.game_id,
+        min: game.min_value,
+        max: game.max_value,
+        attempts: 0,
+        status: 'playing',
+        message: null,
+      })
+    } catch {
+      if (requestId !== requestIdRef.current) return
+      setRound((current) => ({
+        ...current,
+        status: 'error',
+        message: 'Could not start a verified game. Check your connection and retry.',
+      }))
+    }
+  }, [level.level])
+
   useEffect(() => {
-    if (status === 'playing') inputRef.current?.focus()
-  }, [status, target])
+    startRound()
+    return () => {
+      requestIdRef.current += 1
+    }
+  }, [startRound])
 
-  const guess = useCallback(() => {
+  useEffect(() => {
+    if (round.status === 'playing') inputRef.current?.focus()
+  }, [round.status])
+
+  const guess = useCallback(async () => {
     const input = inputRef.current
-    if (!input || status !== 'playing') return
+    if (
+      !input ||
+      round.status !== 'playing' ||
+      !round.gameId ||
+      pendingRef.current
+    ) {
+      return
+    }
 
     const raw = input.value.trim()
-
-    // v2 treated "" as 0; we ask for a number instead and don't count it.
     if (raw === '') {
-      setMessage({ kind: 'invalid', text: 'Type a number to guess.' })
+      setRound((current) => ({
+        ...current,
+        message: { kind: 'invalid', text: 'Type a number to guess.' },
+      }))
       return
     }
 
     const value = Number(raw)
-    if (Number.isNaN(value)) {
-      setMessage({ kind: 'invalid', text: 'Use digits only.' })
+    if (!Number.isFinite(value)) {
+      setRound((current) => ({
+        ...current,
+        message: { kind: 'invalid', text: 'Use digits only.' },
+      }))
       input.value = ''
       return
     }
 
-    if (value < min || value > max) {
-      setMessage({
-        kind: 'invalid',
-        text: `Type a number from ${min} to ${max}.`,
-      })
+    if (value < round.min || value > round.max) {
+      setRound((current) => ({
+        ...current,
+        message: {
+          kind: 'invalid',
+          text: `Type a number from ${round.min} to ${round.max}.`,
+        },
+      }))
       input.value = ''
       return
     }
 
-    const nextAttempts = attempts + 1
-    setAttempts(nextAttempts)
+    pendingRef.current = true
+    setIsSubmitting(true)
+    try {
+      const result = await submitGuess(round.gameId, value)
+      input.value = ''
 
-    if (value < target) {
-      setMessage({ kind: 'low', text: 'Too low. Try a bigger number.' })
-    } else if (value > target) {
-      setMessage({ kind: 'high', text: 'Too high. Try a smaller number.' })
-    } else {
-      setStatus('won')
-      setMessage({
-        kind: 'win',
-        text:
-          nextAttempts === 1
-            ? 'You got it in 1 guess.'
-            : `You got it in ${nextAttempts} guesses.`,
-      })
-      onWin?.(nextAttempts)
+      if (result.status === 'won') {
+        setRound((current) => ({
+          ...current,
+          attempts: result.attempts,
+          status: 'won',
+          target: result.target,
+          message: {
+            kind: 'win',
+            text:
+              result.attempts === 1
+                ? 'You got it in 1 guess.'
+                : `You got it in ${result.attempts} guesses.`,
+          },
+        }))
+        onWin?.(result.attempts)
+      } else {
+        setRound((current) => ({
+          ...current,
+          attempts: result.attempts,
+          message: {
+            kind: result.result,
+            text:
+              result.result === 'low'
+                ? 'Too low. Try a bigger number.'
+                : 'Too high. Try a smaller number.',
+          },
+        }))
+      }
+    } catch {
+      setRound((current) => ({
+        ...current,
+        message: {
+          kind: 'error',
+          text: 'Could not check that guess. Submit the same guess to retry.',
+        },
+      }))
+    } finally {
+      pendingRef.current = false
+      setIsSubmitting(false)
     }
-
-    input.value = ''
-  }, [attempts, max, min, onWin, status, target])
+  }, [onWin, round.gameId, round.max, round.min, round.status])
 
   const reset = useCallback(() => {
-    setTarget(randomTarget(min, max))
-    setAttempts(0)
-    setStatus('playing')
-    setMessage(null)
     if (inputRef.current) inputRef.current.value = ''
-  }, [max, min])
+    startRound()
+  }, [startRound])
 
-  return { target, attempts, status, message, guess, reset, inputRef }
+  return {
+    ...round,
+    guess,
+    reset,
+    retry: startRound,
+    isSubmitting,
+    inputRef,
+  }
 }

@@ -59,7 +59,11 @@ export default function GameMessage({ message, target, won, tier }) {
   return (
     <div role="status" aria-live="polite" className="mt-5">
       <p
-        className={`text-lg ${message.kind === 'invalid' ? 'text-coral' : 'text-chalk'}`}
+        className={`text-lg ${
+          message.kind === 'invalid' || message.kind === 'error'
+            ? 'text-coral'
+            : 'text-chalk'
+        }`}
       >
         {message.text}
       </p>

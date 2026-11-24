@@ -17,7 +17,6 @@ export default function GameBoard({
   level,
   game,
   username,
-  isExistingPlayer,
   onChangeName,
   score,
   newBadges = [],
@@ -64,12 +63,6 @@ export default function GameBoard({
           </div>
         </header>
 
-        {isExistingPlayer && (
-          <p className="pt-3 text-xs text-chalk/60">
-            This name already has scores on the board.
-          </p>
-        )}
-
         <div className="flex flex-1 flex-col pt-8 pb-4 sm:pt-10">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <p className="font-display text-xs font-medium tracking-wide text-gold">
@@ -82,7 +75,22 @@ export default function GameBoard({
             )}
           </div>
 
-          {won ? (
+          {game.status === 'loading' ? (
+            <p role="status" className="mt-6 text-chalk/60">
+              Starting a verified game…
+            </p>
+          ) : game.status === 'error' ? (
+            <div role="alert" className="mt-6">
+              <p className="text-coral">{game.message}</p>
+              <button
+                type="button"
+                onClick={game.retry}
+                className="mt-3 h-11 rounded-sm border border-chalk/25 px-4 text-sm text-chalk motion-safe:transition-colors hover:border-chalk/50 hover:bg-chalk/5"
+              >
+                Retry
+              </button>
+            </div>
+          ) : won ? (
             <>
               <GameMessage message={game.message} target={game.target} won tier={tier} />
 
@@ -90,27 +98,10 @@ export default function GameBoard({
               <div className="-mx-2 mt-3 bg-ink px-2 pb-2">
                 {/* One live region: the save line and any new badges announce together. */}
                 <div role="status" className="min-h-6 text-sm">
-                  {score.status === 'saving' && (
-                    <p className="text-chalk/60">Saving score…</p>
-                  )}
-
                   {score.status === 'saved' && (
                     <p className="text-chalk/60">
-                      Saved to the Level {level.level} leaderboard.
+                      Verified and saved to the Level {level.level} leaderboard.
                     </p>
-                  )}
-
-                  {score.status === 'error' && (
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                      <p className="text-coral">{score.error}</p>
-                      <button
-                        type="button"
-                        onClick={score.retry}
-                        className="h-11 rounded-sm border border-chalk/25 px-4 text-sm text-chalk motion-safe:transition-colors hover:border-chalk/50 hover:bg-chalk/5"
-                      >
-                        Retry save
-                      </button>
-                    </div>
                   )}
 
                   {shownBadges.length > 0 && (
@@ -157,10 +148,14 @@ export default function GameBoard({
           ) : (
             <>
               <p className="mt-1 text-lg text-chalk sm:text-xl">
-                Guess a number from {level.min} to {level.max}
+                Guess a number from {game.min} to {game.max}
               </p>
 
-              <GuessForm inputRef={game.inputRef} onGuess={game.guess} />
+              <GuessForm
+                inputRef={game.inputRef}
+                onGuess={game.guess}
+                disabled={game.isSubmitting}
+              />
 
               <GameMessage message={game.message} target={game.target} won={false} />
             </>

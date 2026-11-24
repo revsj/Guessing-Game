@@ -22,7 +22,10 @@ supabase/
 - Game logic lives in useGame, not in components.
 - Levels: 1 = easy, 2 = medium, 3 = hard. Keep ranges in one constants file.
 - Leaderboard is per level. Rank = best (min) guesses per player, ties broken by earliest created_at.
-- Username is stored in localStorage and mapped to a players row (create if missing).
+- Username is owned by a Supabase anonymous-auth identity; localStorage is display cache only.
+- Guess targets and attempt counts are server-side. Do not reintroduce client score inserts.
+- Public clients cannot insert into players, scores, or player_badges.
+- A released username stays reserved to its original player; only that player may reclaim it.
 - Badges are computed from the scores data, not hardcoded in the UI.
 - Enter/Return must submit a guess (keep this from v2).
 - Secrets go in .env (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY). Never commit them.
@@ -33,12 +36,14 @@ supabase/
 2. Username screen + localStorage.
 3. Supabase schema, saving scores, per-level leaderboard.
 4. Badges.
-5. (Later) Server-side validation of results.
+5. Server-side validation of results (implemented via database RPCs).
 
 ## Current state
-- Phases 1-4 done: React port, username screen, Supabase scores and per-level leaderboard (/leaderboard), badges.
-- Badges are computed on read from scores (plus the leaderboard view for Top 10). Nothing is written to player_badges: its insert policy is open, so stored badges could be faked.
-- Next: phase 5, server-side validation of results.
+- Phases 1-5 done: React port, username screen, Supabase scores and per-level leaderboard (/leaderboard), badges, and server-validated game rounds.
+- Badges are computed on read from scores (plus the leaderboard view for Top 10). Nothing is written to player_badges, and public inserts are revoked.
+- Supabase anonymous sign-ins must be enabled for deployments.
+- Migration 004 keeps released usernames reserved (own-name reclaim allowed) and revokes leftover write grants.
+- Apply 003 and 004 and enable anonymous sign-ins before deploying the phase-5 client; the new client fails without them.
 
-- Usernames are case-insensitive (normalize helper); the player is stored in localStorage as gg:player { id, username }.
+- Usernames are case-insensitive (normalize helper); localStorage stores a non-authoritative gg:player display cache.
 - Design pass rules: no logic changes, keep Supabase calls in src/lib/supabase, restyle username, game, and leaderboard screens together.

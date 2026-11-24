@@ -1,4 +1,4 @@
-export default function GuessForm({ inputRef, onGuess }) {
+export default function GuessForm({ inputRef, onGuess, disabled = false }) {
   function handleSubmit(event) {
     event.preventDefault()
     onGuess()
@@ -11,6 +11,7 @@ export default function GuessForm({ inputRef, onGuess }) {
         id="guessInput"
         type="number"
         step="any"
+        disabled={disabled}
         inputMode="numeric"
         aria-label="Your guess"
         placeholder="e.g. 42"
@@ -19,7 +20,8 @@ export default function GuessForm({ inputRef, onGuess }) {
 
       <button
         type="submit"
-        className="h-14 shrink-0 rounded-sm bg-gold px-8 text-base font-medium text-ink motion-safe:transition-colors motion-safe:active:translate-y-px hover:bg-gold/90"
+        disabled={disabled}
+        className="h-14 shrink-0 rounded-sm bg-gold px-8 text-base font-medium text-ink motion-safe:transition-colors motion-safe:active:translate-y-px hover:bg-gold/90 disabled:opacity-60"
       >
         Guess
       </button>

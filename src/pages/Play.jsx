@@ -4,7 +4,6 @@ import GameBoard from '../components/GameBoard.jsx'
 import useBadges from '../hooks/useBadges.js'
 import useGame from '../hooks/useGame.js'
 import { usePlayer } from '../hooks/usePlayer.js'
-import useScoreSave from '../hooks/useScoreSave.js'
 import { DEFAULT_LEVEL, getLevel, getNextLevel } from '../constants/levels.js'
 import { earnedCodes, sortByRarity } from '../lib/badges.js'
 
@@ -22,20 +21,15 @@ export default function Play() {
 
 function LevelGame({ level }) {
   const navigate = useNavigate()
-  const { username, playerId, isExistingPlayer, startChangeName } = usePlayer()
-  const score = useScoreSave()
-  const { save } = score
+  const { username, playerId, startChangeName } = usePlayer()
+  const [score, setScore] = useState({ status: 'idle', error: null })
   const badges = useBadges({ playerId, username })
   const { reload: reloadBadges } = badges
   const [baseline, setBaseline] = useState(null)
 
-  const handleWin = useCallback(
-    (attempts) => {
-      // Fire and forget: a failed save must never block the game.
-      save({ playerId, level: level.level, guesses: attempts })
-    },
-    [save, playerId, level.level],
-  )
+  const handleWin = useCallback(() => {
+    setScore({ status: 'saved', error: null })
+  }, [])
 
   const game = useGame(level, { onWin: handleWin })
   const nextLevel = getNextLevel(level.level)
@@ -61,7 +55,7 @@ function LevelGame({ level }) {
 
   function handleReset() {
     game.reset()
-    score.reset()
+    setScore({ status: 'idle', error: null })
     // This round is over; the badges just earned become the new baseline.
     setBaseline(badges.status === 'ready' ? earnedCodes(badges.badges) : null)
   }
@@ -71,7 +65,6 @@ function LevelGame({ level }) {
       level={level}
       game={game}
       username={username}
-      isExistingPlayer={isExistingPlayer}
       onChangeName={startChangeName}
       score={score}
       newBadges={newBadges}

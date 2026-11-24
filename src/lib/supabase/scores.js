@@ -1,16 +1,5 @@
 import { requireClient } from './client.js'
 
-export async function submitScore({ playerId, level, guesses }) {
-  if (!playerId) throw new Error('No player profile to attach this score to')
-
-  const client = requireClient()
-  const { error } = await client
-    .from('scores')
-    .insert({ player_id: playerId, level, guesses })
-
-  if (error) throw error
-}
-
 /**
  * Top scores for one level from the `leaderboard` view (best guesses per
  * player). Ties go to the earliest created_at.

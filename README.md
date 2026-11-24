@@ -73,14 +73,14 @@ also reasons to come back. Each round still ends naturally, but if the
 - Direct links such as /play/2 ask for a name first, then continue
   to that level.
 - Change name is available from the game header.
-- Usernames are compared case-insensitively. The typed case is kept
-  for display.
+- Usernames are unique case-insensitively. The typed case is kept
+  for display; each profile is owned by a Supabase anonymous-auth session.
 
 ### Phase 3 - Supabase scores and leaderboard (done)
 - Supabase (Postgres) stores players and scores.
-- Saving a name creates the player, or adopts an existing player
-  with the same name (with a notice that scores add to that name).
-- A win saves a score. If saving fails, the game keeps working.
+- Saving a name creates or updates the player owned by the current
+  Supabase anonymous-auth session. Existing names cannot be adopted.
+- A win saves a score only after the server verifies the guesses.
 - /leaderboard shows the top 10 per level (best score per player,
   earliest date breaks ties), with a "You" marker on your row.
 - Row Level Security is on for all tables.
@@ -89,17 +89,27 @@ also reasons to come back. Each round still ends naturally, but if the
 - Seven badges: First win, Sharp, Near perfect, Lucky guess, Hard
   mode cleared, All levels cleared, and Top 10.
 - Badges are computed on read from scores, plus the leaderboard view
-  for Top 10. They are not stored. player_badges is unused on purpose:
-  its insert policy is open, so stored badges could be faked.
+  for Top 10. They are not stored. Direct writes to player_badges are
+  disabled.
 - The win screen shows up to three new badges, rarest first, then
   "+N more, see the leaderboard". The leaderboard page shows all seven
   with explicit Earned/Locked labels, never color alone.
 - The baseline comes from the first successful badge load. A failed
-  first fetch or a failed save shows no new badges for that round.
+  first fetch shows no new badges for that round.
 - Save status and new badges share one live region, so they are
   announced together.
 - Top 10 is a current-standing badge and can disappear when someone
   beats your score.
+
+### Phase 5 - Server-validated scores (done)
+- Supabase anonymous auth supplies a stable identity for each browser.
+- Player names are bound to that identity; localStorage is display
+  cache only and cannot select another player's row.
+- The database generates and stores each target and counts guesses.
+  It inserts a score only when that authenticated player reaches the
+  target.
+- Direct client inserts into players, scores, and player_badges are
+  revoked.
 
 ### Design pass (done)
 - Restyled the username screen, game, leaderboard and rename dialog
@@ -143,6 +153,13 @@ also reasons to come back. Each round still ends naturally, but if the
   leaderboard view. Migrations are in supabase/migrations. Badge
   state is derived on read from scores and the leaderboard view, so
   the badges and player_badges tables are currently unused.
+- Server validation: the database owns each round's target and
+  attempt count. Authenticated RPCs accept guesses and insert a score
+  only when the server-side target is reached. Direct public inserts
+  into players, scores, and player_badges are revoked.
+- Anonymous Supabase Auth gives each browser a stable,
+  server-verifiable player identity. Names and scores are not
+  recoverable on another browser without a login flow.
 - Brand assets: public/brand/logo.png (header lockup) and
   public/brand/logo.svg (favicon).
 - Secrets: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY go in
@@ -151,11 +168,16 @@ also reasons to come back. Each round still ends naturally, but if the
 
 ## 5. KNOWN LIMITS
 
-- No login. Anyone can type a name that is already taken and add
-  scores to it.
-- Scores are sent from the browser, so a technical user could submit
-  a fake result. The planned fix is validating the game on the server
-  (a Supabase function).
+- No account recovery or cross-device login; anonymous player
+  identities are tied to the browser's Supabase Auth session.
+- Player names from before the secure migration are unowned and cannot
+  be claimed automatically. Existing names remain reserved, and old
+  scores remain visible on the leaderboard.
+- Scores recorded before phase 5 are unverified: the old client could
+  insert any guess count. Reset the board before launch
+  (`delete from public.scores;`); badges recompute from scores.
+- A name released with "Change name" stays reserved to its original
+  player. Only that player can reclaim it; others see it as unavailable.
 - Badges are derived from data the browser can read, so Top 10 can
   change under you. Stored badges are intentionally not used.
 - The favicon uses the full lockup, which is hard to read at 16px.
@@ -164,13 +186,25 @@ also reasons to come back. Each round still ends naturally, but if the
 
 1. Commit the badge and branding work on the design-pass branch.
 2. Play-test: the win celebration (quick and slow win, 360px, reduced
-   motion on), new badges after a win, an offline save followed by
-   Retry, and the leaderboard badge strip.
+   motion on), new badges after a verified win, and the leaderboard
+   badge strip.
 3. Check the Vercel preview of the design-pass branch (confirm the
    Supabase environment variables are set for Preview).
 4. Merge design-pass into main for the production deploy.
-5. Phase 5: server-side validation of results (a Supabase function).
-6. Optional: a face-only favicon, login, and a "take a break" prompt
+5. Security go-live, in this exact order:
+   1. Apply `supabase/migrations/003_server_validated_games.sql`.
+   2. Apply `supabase/migrations/004_harden_usernames.sql`.
+   3. Enable anonymous sign-ins in Supabase Auth → Providers.
+   4. Export the `scores` table, then reset it if this is a launch
+      (`delete from public.scores;`) so pre-fix rows do not ship.
+   5. Deploy the phase-5 client. Deploying before step 1 breaks play:
+      `start_game` does not exist and every round errors.
+   6. Verify: React props show no target before a win, `start_game`
+      returns only `game_id`, `min_value`, `max_value`, and a direct
+      `POST /rest/v1/scores` with the anon key is rejected.
+   Existing profiles are not automatically assigned to new anonymous
+   accounts.
+6. Optional: a face-only favicon, account recovery, and a "take a break" prompt
    to support the stopping-cue purpose.
 7. Read through useGame.js and usePlayer.js to understand the logic
    well enough to explain it yourself.
