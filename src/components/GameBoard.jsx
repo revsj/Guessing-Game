@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import BadgeList from './BadgeList.jsx'
+import BrandLogo from './BrandLogo.jsx'
 import GameMessage from './GameMessage.jsx'
 import GuessForm from './GuessForm.jsx'
 import WinCelebration, { getWinTier } from './WinCelebration.jsx'
@@ -36,9 +37,9 @@ export default function GameBoard({
     <main className="isolate flex min-h-dvh w-full flex-col">
       {won && <WinCelebration tier={tier} />}
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 sm:px-6">
-        <header className="flex flex-col gap-1 border-b border-chalk/15 py-4 sm:flex-row sm:flex-wrap sm:items-baseline sm:gap-x-6 sm:gap-y-1">
-          <h1 className="font-display text-lg font-semibold tracking-tight sm:mr-auto">
-            Guessing game
+        <header className="flex flex-col gap-1 border-b border-chalk/15 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-1">
+          <h1 className="sm:mr-auto">
+            <BrandLogo />
           </h1>
 
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-chalk/60">

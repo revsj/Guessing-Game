@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { isSupabaseConfigured } from '../lib/supabase/client.js'
 import { USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from '../lib/username.js'
+import BrandLogo from './BrandLogo.jsx'
 import DatabaseNotice from './DatabaseNotice.jsx'
 
 export default function UsernameScreen({ player, overlay = false }) {
@@ -102,9 +103,9 @@ export default function UsernameScreen({ player, overlay = false }) {
     return (
       <main className="flex min-h-dvh w-full flex-col">
         <div className="mx-auto flex w-full max-w-xl flex-1 flex-col px-5 sm:px-6">
-          <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-chalk/15 py-4">
-            <h1 className="font-display text-lg font-semibold tracking-tight">
-              Guessing game
+          <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-chalk/15 py-4">
+            <h1>
+              <BrandLogo />
             </h1>
             <Link
               to="/leaderboard"

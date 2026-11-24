@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import BadgeList from '../components/BadgeList.jsx'
+import BrandLogo from '../components/BrandLogo.jsx'
 import DatabaseNotice from '../components/DatabaseNotice.jsx'
 import Leaderboard from '../components/Leaderboard.jsx'
 import useBadges from '../hooks/useBadges.js'
@@ -27,8 +28,8 @@ export default function LeaderboardPage() {
     <main className="flex min-h-dvh w-full flex-col">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-5 sm:px-6">
         <header className="border-b border-chalk/15 py-4">
-          <h1 className="font-display text-lg font-semibold tracking-tight">
-            Guessing game
+          <h1>
+            <BrandLogo />
           </h1>
         </header>
 
